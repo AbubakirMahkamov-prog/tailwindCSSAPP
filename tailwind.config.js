@@ -11,6 +11,7 @@ module.exports = {
         oneBlack: '#181F2A',
         oneGray: '#71757A',
         hoverBg: 'rgb(240,243,255)',
+        grayR: '#88898D',
       }
     },
   },

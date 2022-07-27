@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
 //search start
 const searchIcon = ref(null)
 const focusSearch = () => {
@@ -11,19 +11,67 @@ const blurSearch = () => {
   searchIcon.value.style.color = '#aaa'
   searchBarHistory.value.style.display = 'none'
 }
-const searchHistories = [
+const searchHistories = reactive([
   { img: new URL('./assets/img/user.png', import.meta.url).href, title: 'Title1', content: 'Test1'},
   { img: new URL('./assets/img/user.png', import.meta.url).href, title: 'Title2', content: 'Test2'},
   { img: new URL('./assets/img/user.png', import.meta.url).href, title: 'Title3', content: 'Test3'},
   { img: new URL('./assets/img/user.png', import.meta.url).href, title: 'Title4', content: 'Test4'},
-]
+])
 const searchBarHistory = ref(null)
 const searchValue = ref('')
 //search end
+//notifications start
+const notificationsNew = reactive([
+  { id: 1, img: new URL('./assets/img/user.png', import.meta.url).href, content: 'Nolan Curtis, added 26 new photos', timeAgo: '14min'},
+  { id: 2, img: new URL('./assets/img/user.png', import.meta.url).href, content: 'Nolan Curtis, added 26 new photos', timeAgo: '14min'},
+  { id: 3, img: new URL('./assets/img/user.png', import.meta.url).href, content: 'Nolan Curtis, added 26 new photos', timeAgo: '14min'},
+  { id: 4, img: new URL('./assets/img/user.png', import.meta.url).href, content: 'Nolan Curtis, added 26 new photos', timeAgo: '14min'},
+  { id: 5, img: new URL('./assets/img/user.png', import.meta.url).href, content: 'Nolan Curtis, added 26 new photos', timeAgo: '14min'},
+  { id: 6, img: new URL('./assets/img/user.png', import.meta.url).href, content: 'Nolan Curtis, added 26 new photos', timeAgo: '14min'},
+  { id: 7, img: new URL('./assets/img/user.png', import.meta.url).href, content: 'Nolan Curtis, added 26 new photos', timeAgo: '14min'}
+])
+const notificationsPrevious = reactive([
+  { img: new URL('./assets/img/user.png', import.meta.url).href, content: 'Nolan Curtis, added 26 new photos', timeAgo: '14min'},
+  { img: new URL('./assets/img/user.png', import.meta.url).href, content: 'Nolan Curtis, added 26 new photos', timeAgo: '14min'},
+  { img: new URL('./assets/img/user.png', import.meta.url).href, content: 'Nolan Curtis, added 26 new photos', timeAgo: '14min'},
+  { img: new URL('./assets/img/user.png', import.meta.url).href, content: 'Nolan Curtis, added 26 new photos', timeAgo: '14min'},
+])
+const notifications = ref(null)
+const deletedId = ref(null)
+const showNotification = ref(false)
+const toggleNotifications = () => {
+  if(showNotification.value) {
+    notifications.value.style.display = 'none'
+    showNotification.value = false
+  } else if(showNotification.value == false) {
+    notifications.value.style.display = 'block'
+    showNotification.value = true
+  }
+}
+const removeNewNotification = (id) => {
+  const index = notificationsNew.findIndex((val) => val.id == id)
+  notificationsNew.splice(index, 1)
+  deletedId.value = id
+  showNotification.value = false
+  notifications.value.style.display = 'none'
+  setTimeout(() => {
+    deletedId.value = null
+  }, 2000)
+}
+//notifications end
 </script>
 
 <template>
   <div class="container m-auto">
+    <!--Notifications start-->
+    <div id="deleteNotification" v-if="deletedId !== null">
+      <p class="flex">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg> 
+        Notification deleted  {{ deletedId }}</p>
+    </div>
+    <!--Notifications end-->
     <!--nav start-->
     <nav class="flex w-full pt-4 align-middle bg-white h-20">
       <div class="searchbar w-68 ml-10 mt-2">
@@ -76,7 +124,41 @@ const searchValue = ref('')
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mt-2 ml-2 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          <a href="#0" class="ml-2 mt-2">Notifications</a></li>
+          <button class="ml-2" @click="toggleNotifications">Notifications</button></li>
+          <!--notifications start-->
+            <div class="absolute bg-white mt-12 rounded-2xl notifications w-64 hidden" ref="notifications">
+              <div class="flex justify-between px-3 mt-4">
+                <h1 class="font-bold text-sm">Notifications</h1>
+                <p class="text-sm text-sky-600">Read all</p>
+              </div>
+              <p class="px-3 mt-4">New</p>
+              <div class="news mt-4">
+                <div v-if="notificationsNew.length === 0">
+                  <p class="px-3 text-gray-500">Notifications not found 🙁</p>
+                </div>
+                <div v-for="item in notificationsNew" class="flex px-4 mt-1">
+                    <img :src="item.img" alt="" class="w-8 h-8">
+                    <div class="text-sm ml-4 flex flex-col">
+                      <span>{{ item.content }}</span>
+                      <span class="text-grayR">{{ item.timeAgo }}</span>
+                    </div>
+                    <button @click="removeNewNotification(item.id)">...</button>
+                </div>
+              </div>
+              <p class="px-3 mt-4">Previous</p>
+                <div class="previous mt-4">
+                  <div v-for="item in notificationsPrevious" class="flex px-4 mt-1">
+                      <img :src="item.img" alt="" class="w-8 h-8">
+                      <div class="text-sm ml-4 flex flex-col">
+                        <span>{{ item.content }}</span>
+                        <span class="text-grayR">{{ item.timeAgo }}</span>
+                      </div>
+                      <a href="#0">...</a>
+                </div>
+              </div>
+            </div>
+          <!--notifications end-->
+
           <p class="mt-4">|</p>
         <li class="flex align-middle h-10 rounded-full w-24 mt-2 hover:bg-hoverBg hover:text-sky-600 transition cursor-pointer">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mt-2 ml-2 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -85,9 +167,12 @@ const searchValue = ref('')
           </svg>
           <a href="#0" class="ml-2 mt-2">Tools</a></li>
       </ul>
-      <div class="user w-52 ml-8 flex justify-between h-12 bg-userbg rounded-full">
+      <div class="user w-60 flex justify-between h-12 transition rounded-full hover:bg-hoverBg cursor-pointer">
         <img src="./assets/img/user.png" alt="" class="w-10 h-10 rounded-full ml-4 mt-1">
-        <span class="w-24 ml-4 mr-8  align-middle mt-3">Ersad Basbag</span>
+        <span class="w-48 ml-4 mr-8  align-middle mt-3">Ersad Basbag</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-8 mt-3 mr-3 text-2xl" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
       </div>
     </nav>
     <!--nav end-->
@@ -106,5 +191,44 @@ body {
   color: #aaa;
   margin-left: 50px;
   margin-top: 6px;
+}
+.notifications {
+  margin-left: 330px;
+  height: 510px;
+}
+.news {
+  max-height: 200px; 
+  overflow: auto;
+}
+.previous {
+  max-height: 150px;
+  overflow: auto;
+}
+#deleteNotification {
+  padding: 30px;
+  background-color: white;
+  position: absolute;
+  margin-top: 300px;
+  margin-left: 500px;
+  margin-right: 500px;
+}
+::-webkit-scrollbar {
+  width: 5px;
+}
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888; 
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
 }
 </style>
